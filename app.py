@@ -18,7 +18,7 @@ def login_required(f):
 
 #Configuração básica do Flask, incluindo uma chave secreta para sessões.
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'CINCITY09'
+app.config['SECRET_KEY'] = 'Cincity09!'
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 ###############################################
@@ -26,8 +26,9 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 # Conexão com o banco de dados MySQL
 mydb = mysql.connector.connect(
     host='localhost',
+    port=3306,
     user='root',
-    password='Cincity09!',
+    password='',
     database='formulario'
 )
 
@@ -65,7 +66,7 @@ def get_dados():
         dados.append(
             {
                 'id': dado[0],
-                'plataforma': dado[1],
+                'nome_candidato': dado[1],
                 'login': dado[2],
                 'senha': dado[3]
             }
@@ -88,13 +89,13 @@ def home():
 #Insere novos registros no banco de dados.
 @app.route("/entrada", methods=['POST'])
 def inserir():
-    plataforma = request.form.get('plataforma')
+    nome_candidato = request.form.get('nome_candidato')
     login = request.form.get('login')
     senha = request.form.get('senha')
     
     if mydb.is_connected():
         mycursor = mydb.cursor()
-        mycursor.execute(f"INSERT INTO logins VALUES (default, '{plataforma}', '{login}', '{senha}')")
+        mycursor.execute(f"INSERT INTO logins VALUES (default, '{nome_candidato}', '{login}', '{senha}')")
         mydb.commit()
 
     return redirect('/dados')  # Redirecione para '/dados' para exibir a tabela atualizada
@@ -112,4 +113,4 @@ def excluir(id):
 
 #Executa o aplicativo no modo de depuração.
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=5000)
