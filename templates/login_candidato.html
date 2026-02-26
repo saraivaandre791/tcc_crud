@@ -3,21 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login Candidato</title>
     <link rel="stylesheet" href="../static/css/formulario.css">
-    <link rel="shortcut icon" type="image/svg" href="../static/abobora.ico"/>
-
 </head>
 <body>
-    <h1>Login</h1>
-    <form method="POST" action="{{ url_for('login') }}">
+    <h1>Login - Candidato</h1>
+    <form method="POST" action="{{ url_for('login_candidato') }}"></form>
         {{ form.hidden_tag() }}
         <p>
-            {{ form.username.label }}<br>
+            {{ form.username.label }}<br> 
             {{ form.username(size=32) }}
         </p>
         <p>
-            {{ form.password.label }}<br>
+            {{ form.password.label }}<br> 
             {{ form.password(size=32) }}
         </p>
         <p>{{ form.submit() }}</p>

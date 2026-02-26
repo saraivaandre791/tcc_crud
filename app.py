@@ -1,9 +1,8 @@
 from flask import Flask, make_response, render_template, request, redirect
 import mysql.connector
-from forms import LoginForm
 from flask import flash
 from flask import session
-
+from forms import LoginForm
 from functools import wraps
 
 #Essa função garante que certas rotas só sejam acessadas por usuários logados.
@@ -11,7 +10,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'logged_in' not in session:
-            return redirect('login')
+            return redirect('/escolha')
         return f(*args, **kwargs)
     return decorated_function
 #####################################
@@ -33,27 +32,66 @@ mydb = mysql.connector.connect(
 )
 
 ################################################
+#Rota inicial:
+@app.route('/escolha')
+def escolha():
+    return render_template('escolha.html')
 
+##################################################################
 #Verifica as credenciais do usuário e atualiza a sessão.
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
+
+
+########################################################################
+# novas rotas login candidato:
+@app.route('/login_candidato', methods=['GET', 'POST'])
+def login_candidato():
+    form = LoginForm() 
+    if form.validate_on_submit(): 
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT * FROM logins WHERE login = %s AND senha = %s", (form.username.data, form.password.data))
+        mycursor.execute("SELECT * FROM logins WHERE login = %s AND senha = %s",
+                         (form.username.data, form.password.data))
         user = mycursor.fetchone()
 
         if user:
             session['logged_in'] = True
-            flash('Login bem-sucedido!', 'success')
+            session['tipo'] = 'candidato'
+            flash('Login candidadato bem-sucedido!', 'success')
             return redirect('/')
+        
         else:
-            flash('Nome de usuário ou senha incorretos.', 'danger')
-    return render_template('login.html', form=form)
+            flash('Usuario ou senha incorretos.', 'danger')
+            return render_template('login_candidato.html', form=form)
+        
+#sempre retorna o template no GET
+    return render_template('login_candidato.html', form=form)
+        
+###############################################################################
+# login ONG:
+@app.route('/login_ong', methods=['GET', 'POST'])
+def login_ong():
+    form = LoginForm()
+    if form.validate_on_submit():
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT * FROM login_ong WHERE login = %s AND senha = %s", 
+                         (form.username.data, form.password.data))
+        user = mycursor.fetchone()
 
-########################################################################
+        if user:
+            session['logged_in'] = True
+            session['tipo'] = 'ong'
+            flash('Login ONG bem-sucedido!', 'success')
+            return redirect('/')
+        
+        else:
+            flash('Usuario ou senha incorretos.', 'danger')
+            return render_template('login_ong.html', form=form)
+        
+        #sempre retorna o template no GET
+    return render_template('login_ong.html', form=form)
+        
 
 
+############################################################################
 #Recupera dados do banco de dados e os exibe.
 @app.route('/dados', methods=['GET'])
 def get_dados():
@@ -82,7 +120,7 @@ def get_dados():
 @app.route('/')#Rota inicial
 @login_required # acessar essa rota exige login
 def home():
-    return render_template('entrada_registros.html')
+    return render_template('/escolha.html')
 
 ############################################################
 
