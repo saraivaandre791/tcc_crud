@@ -2,7 +2,7 @@ from flask import Flask, make_response, render_template, request, redirect
 import mysql.connector
 from flask import flash
 from flask import session
-from forms import LoginForm
+from forms import LoginForm, CadastroCandidatoForm, CadastroOngForm
 from functools import wraps
 
 #Essa função garante que certas rotas só sejam acessadas por usuários logados.
@@ -30,6 +30,13 @@ mydb = mysql.connector.connect(
     password='',
     database='formulario'
 )
+
+@app.route('/')#Rota inicial
+@login_required # acessar essa rota exige login
+def home():
+    return render_template('/escolha.html')
+
+############################################################
 
 ################################################
 #Rota inicial:
@@ -92,6 +99,41 @@ def login_ong():
 
 
 ############################################################################
+
+#Rotas Insere novos registros no banco de dados.
+@app.route('/cadastro_candidato', methods=['GET', 'POST'])
+def cadastro_candidato():
+    form = CadastroCandidatoForm()
+    if form.validate_on_submit():
+        mycursor = mydb.cursor()
+        mycursor.execute( 
+            "INSERT INTO logins (nome_candidato, login, senha) VALUES (%s, %s, %s)", 
+                      (form.nome.data, form.login.data, form.senha.data) 
+        )
+        mydb.commit()
+        flash('CAndidato cadastrado com sucesso!', 'success')
+        return redirect('/login_candidato')
+    return render_template('cadastro_candidato.html', form=form)
+
+
+@app.route('/cadastro_ong', methods=['GET', 'POST'])
+def cadastro_ong():
+    form = CadastroOngForm()
+    if form.validate_on_submit():
+        mycursor = mydb.cursor()
+        mycursor.execute(
+            "INSERT INTO login_ong (nome_ong, login, senha) VALUES (%s, %s, %s)", 
+            (form.nome.data, form.login.data, form.senha.data)
+        )
+        mydb.commit()
+        flash('ONG cadastrada com sucesso!', 'success')
+        return redirect('/login_ong')
+    return render_template('cadastro_ong.html', form=form)
+
+################################################################################## 
+      
+      
+
 #Recupera dados do banco de dados e os exibe.
 @app.route('/dados', methods=['GET'])
 def get_dados():
@@ -117,26 +159,12 @@ def get_dados():
 
 
 
-@app.route('/')#Rota inicial
-@login_required # acessar essa rota exige login
-def home():
-    return render_template('/escolha.html')
 
-############################################################
 
-#Insere novos registros no banco de dados.
-@app.route("/entrada", methods=['POST'])
-def inserir():
-    nome_candidato = request.form.get('nome_candidato')
-    login = request.form.get('login')
-    senha = request.form.get('senha')
+
     
-    if mydb.is_connected():
-        mycursor = mydb.cursor()
-        mycursor.execute(f"INSERT INTO logins VALUES (default, '{nome_candidato}', '{login}', '{senha}')")
-        mydb.commit()
 
-    return redirect('/dados')  # Redirecione para '/dados' para exibir a tabela atualizada
+      # Redirecione para '/dados' para exibir a tabela atualizada
 
 ################################################################################
 
