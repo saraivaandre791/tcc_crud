@@ -8,7 +8,7 @@
 </head>
 <body>
     <h1>Login - ONG</h1>
-    <form method="POST" action="{{ url_for('login_ong') }}"></form>
+    <form method="POST" action="{{ url_for('login_ong') }}">
         {{ form.hidden_tag() }}
         <p>
             {{ form.username.label }}<br> 
